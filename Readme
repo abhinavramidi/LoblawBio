@@ -1,0 +1,172 @@
+# Immune Drug Trial Analysis Technical Assessment
+
+Hi Teiko Hiring Committee,
+
+My name is Abhinav Ramidi, and I am a Rutgers University Senior double majoring in Biomedical Engineering and Computer Science. Please find my solutions to your technical assessment within this repository, supported by my strong academic foundation in Bioinformatics, Data Management, and Statistics, paired with industry healthcare data science internship experiences at Johnson & Johnson and Novartis.
+
+For any questions, please contact me at: abhinav.ramidi@gmail.com
+
+---
+
+## Quick Start
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the main analysis script
+python ImmuneDrugTrialAnalysis.py
+
+# Launch the interactive dashboard
+python ImmuneDrugTrialDashboard.py
+
+# Open browser to http://127.0.0.1:8050/
+```
+
+---
+
+## Setup Instructions
+
+**Prerequisites:**
+- Python 3.8 or higher
+- pip package manager
+
+**Installation:**
+1. Clone this repository (or open in GitHub Codespaces)
+2. Install required packages: `pip install -r requirements.txt`
+3. Verify `cell-count.csv` is in the project root directory
+
+**Running the Analysis:**
+1. Execute `python ImmuneDrugTrialAnalysis.py` to create the database, perform statistical analysis, and generate visualizations
+2. Execute `python ImmuneDrugTrialDashboard.py` to launch the interactive dashboard. Navigate to `http://127.0.0.1:8050/` in your browser
+
+---
+
+## Database Schema Design
+
+### Schema Overview
+
+The database implements a normalized relational design with two primary tables:
+
+**Subjects Table** (Patient-level data)
+- Primary Key: `subject`
+- Attributes: `project`, `condition`, `age`, `sex`, `treatment`, `response`
+
+**Samples Table** (Sample-level data)
+- Primary Key: `sample`
+- Foreign Key: `subject` → `Subjects(subject)`
+- Attributes: `sample_type`, `time_from_treatment`, `b_cell`, `cd8_t_cell`, `cd4_t_cell`, `nk_cell`, `monocyte`
+
+### Design Rationale
+
+**Normalization:**
+- Subject information stored once in Subjects table, eliminating redundancy across multiple samples
+- Sample-level measurements stored in Samples table with foreign key relationship
+- Weak entity relationship ensures samples cannot exist without corresponding subject metadata
+
+**Primary/Foreign Keys:**
+- `subject` uniquely identifies each patient
+- `sample` uniquely identifies each biological sample
+- Foreign key constraint enforces referential integrity and prevents orphaned samples
+- Enforced via `PRAGMA foreign_keys = ON`
+
+**Scalability Considerations:**
+
+For hundreds of projects and thousands of samples:
+
+1. **Indexing Strategy:**
+   - Composite indexes on frequently queried columns (e.g., `treatment + condition + response`)
+   - Index on `Samples(subject, sample_type, time_from_treatment)` for common filtering patterns
+   - Significantly reduces query time for filtered analyses
+
+2. **Schema Extensions:**
+   - Add `Projects` table to manage multi-project metadata (PI, start date, study phase)
+   - Partition `Samples` table by `project` for parallel query processing
+   - Consider materialized views for pre-computed aggregations (e.g., cell frequencies)
+
+4. **Analytics Flexibility:**
+   - Schema supports diverse analytics and can be extended with additional tables without restructuring core schema
+
+This normalized design minimizes storage redundancy, enables efficient queries at scale, and provides flexibility for future analytical requirements.
+
+---
+
+## Code Structure and Design Rationale
+
+### Part 1: Data Management
+
+I selected SQLite as the database due to its inclusion in Python's standard library and my prior experience with SQL (particularly MySQL) from coursework and internships. The database creation process uses a staging table pattern to separate ETL from data modeling:
+
+1. Load raw CSV data into `countCSVStaging` table
+2. Extract and normalize into `Subjects` and `Samples` tables using `SELECT DISTINCT`
+3. Drop staging table after successful load
+
+This approach validates data before inserting into production tables, allows for data transformation during load, and is idempotent (can re-run without creating duplicates). The schema design emphasizes simplicity and readability while maintaining proper normalization and referential integrity.
+
+### Part 2: Initial Analysis - Data Overview
+
+I created a SQLite view (`SampleCellFrequencies`) to address this requirement. A view was preferable to a materialized table because:
+- All frequency calculations derive from the `Samples` table
+- View always reflects current data without synchronization issues
+- Saves storage space and encapsulates calculation logic
+- Dataset size permits real-time computation without performance concerns
+
+The view calculates total cell count per sample and computes relative frequencies as percentages using a UNION ALL approach to create one row per cell population per sample.
+
+### Part 3: Statistical Analysis
+
+I filtered the data for melanoma patients receiving Miraclib with PBMC samples, then used a simple for loop to generate boxplots and conduct two-sample t-tests for each of the five immune cell populations. 
+
+**Key Finding:** The evidence suggests we can reject the null hypothesis only for CD4 T Cells, which exhibited a p-value of 0.005 < alpha value of 0.05. This indicates that the relative frequency of CD4 T Cells significantly differs between melanoma patients who respond versus those who do not respond to Miraclib treatment in PBMC samples. All other cell populations (B Cells, CD8 T Cells, NK Cells, Monocytes) showed no statistically significant differences between responders and non-responders.
+
+### Part 4: Data Subset Analysis
+
+I constructed efficient SQL queries to answer each of the four specific questions about baseline melanoma PBMC samples (time_from_treatment = 0) from patients treated with Miraclib:
+1. Identified all qualifying samples
+2. Counted samples per project
+3. Counted subjects by response status (yes/no)
+4. Counted subjects by sex (M/F)
+
+The queries leverage JOIN operations and GROUP BY aggregations to produce summary tables efficiently.
+
+### Google Form Question & Dashboard
+
+I executed a targeted SQL query to calculate the average B cell count for melanoma males who responded at baseline, rounding to two decimal places as requested.
+
+Finally, I packaged all analyses into an interactive Plotly Dash application with four tabs corresponding to Parts 1-4. The dashboard provides searchable/filterable tables, interactive visualizations, and statistical summaries for comprehensive data exploration.
+
+---
+
+## Dashboard Access
+
+**Local Deployment:**
+
+```bash
+python ImmuneDrugTrialDashboard.py
+```
+
+Navigate to `http://127.0.0.1:8050/` in your browser.
+
+**Note on Hosting:** I chose not to deploy this dashboard publicly as it would require a persistent server to enable user interactivity. I have experience setting up such deployments from my internships, particularly using Databricks environments at Johnson & Johnson.
+
+---
+
+## Dependencies
+
+```txt
+pandas
+scipy
+matplotlib
+seaborn
+dash
+plotly
+```
+
+Note: `sqlite3` and `csv` is included in Python's standard library.
+
+---
+
+**Author:** Abhinav Ramidi  
+**Contact:** abhinav.ramidi@gmail.com  
+**Date:** February 2026  
+**Institution:** Rutgers University
