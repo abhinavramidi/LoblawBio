@@ -48,6 +48,8 @@ python ImmuneDrugTrialDashboard.py
 
 The database implements a normalized relational design with two primary tables:
 
+![PXL_20260201_235601884](https://github.com/user-attachments/assets/cf7d60e1-8874-4a16-9538-0b7086aa8d26)
+
 **Subjects Table** (Patient-level data)
 - Primary Key: `subject`
 - Attributes: `project`, `condition`, `age`, `sex`, `treatment`, `response`
