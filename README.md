@@ -146,6 +146,12 @@ Finally, I packaged all analyses into an interactive Plotly Dash application wit
 ```bash
 python ImmuneDrugTrialDashboard.py
 ```
+**Screenshots of Plotly Dashboard**
+<img width="2556" height="1223" alt="Screenshot 2026-02-01 185954" src="https://github.com/user-attachments/assets/5fb67563-ee07-485a-93e7-fabc68e0892c" />
+<img width="2554" height="1215" alt="Screenshot 2026-02-01 190009" src="https://github.com/user-attachments/assets/2fbd5213-61cd-4b27-a34a-2d3e33936c6e" />
+<img width="2559" height="1180" alt="Screenshot 2026-02-01 190022" src="https://github.com/user-attachments/assets/4f8d7873-3cb1-41b9-823e-cd45497d73c7" />
+<img width="2555" height="1175" alt="Screenshot 2026-02-01 190034" src="https://github.com/user-attachments/assets/bc6f425b-7f8d-418a-9359-02e855c62648" />
+
 
 Navigate to `http://127.0.0.1:8050/` in your browser.
 
