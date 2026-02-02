@@ -385,4 +385,4 @@ if __name__ == '__main__':
     print("\nOpening dashboard at: http://127.0.0.1:8050/")
     print("="*60 + "\n")
     
-    app.run(debug=True, host='127.0.0.1', port=8050)
+    app.run(debug=False, host='127.0.0.1', port=8050)
